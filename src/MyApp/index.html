@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <script type="text/javascript">
+        var conn = new WebSocket('ws://localhost:8080');
+        conn.onopen = function(e) {
+            console.log("Connection established!");
+        };
+
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            const obj = {
+                "message" : message
+            }
+            const json = JSON.stringify(obj)
+            conn.send(json);
+        }
+    </script>
+</head>
+<body>
+    <input type="text" id="message" />
+    <button onclick="sendMessage()">Send</button>
+</body>
+</html>
