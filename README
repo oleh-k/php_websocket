@@ -1,0 +1,54 @@
+# PHP WebSocket Chat Application
+
+This repository contains a simple chat application using WebSockets in PHP. The application enables real-time messaging between clients connected through a WebSocket server. Messages sent by clients are stored directly in files without the need for a database. This README provides an overview of the application and instructions for setting it up and running it.
+
+## Features
+
+- Real-time bi-directional communication between server and clients using WebSockets.
+- Text messages are stored in files, each connection having its own log file.
+- No database required, simplifying setup and reducing dependencies.
+- Simple and lightweight design, suitable for understanding the basics of WebSockets in PHP.
+
+## Requirements
+
+- PHP 7.4 or higher.
+- Composer for managing PHP dependencies.
+- A web server (like Apache or Nginx) capable of serving PHP.
+- Web browser with support for JavaScript and WebSockets.
+
+## Installation
+
+1. **Clone the Repository**
+git clone https://github.com/oleh-k/php_websocket.git
+cd php_websocket
+
+
+2. **Install Dependencies**
+composer install
+
+
+3. **Run the WebSocket Server**
+php websocket_server.php
+
+This will start the WebSocket server on `localhost:8080`.
+
+## Usage
+
+1. **Open the Client Interface**
+- Navigate to the `index.html` file in your web browser to open the chat interface.
+
+2. **Connect to the WebSocket Server**
+- The client interface should automatically connect to the WebSocket server.
+
+3. **Chatting**
+- Enter your message in the input field and press Send. The message will be transmitted to the server and stored in a file.
+
+## File Storage
+
+- Messages are stored in text files within the project directory.
+- Each client connection generates a new file with the naming convention `message_{resourceId}.txt`, where `{resourceId}` is the unique identifier of the WebSocket connection.
+
+
+## Author
+
+[Oleh](https://github.com/oleh-k)
