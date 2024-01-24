@@ -21,7 +21,20 @@ class Chat implements MessageComponentInterface
 
     public function onMessage(ConnectionInterface $from, $msg)
     {
+        $data = json_decode($msg);
 
+        if (isset($data->message) && !empty($data->message)) {
+            $string = $data->message;
+            file_put_contents("message_{$from->resourceId}.txt", $string . "\n", FILE_APPEND);
+
+            $answer = [
+                "success" => true,
+                "message" => "Ваше повідомлення отримано"
+            ];
+
+            $jsonResponse = json_encode($answer);
+            $from->send($jsonResponse);
+        }
     }
 
     public function onClose(ConnectionInterface $conn)
@@ -31,7 +44,5 @@ class Chat implements MessageComponentInterface
 
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
-        
     }
-
 }
