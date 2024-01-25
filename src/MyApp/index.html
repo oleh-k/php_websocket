@@ -1,25 +1,45 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>WebSocket Test</title>
     <script type="text/javascript">
-        var conn = new WebSocket('ws://localhost:8080');
-        conn.onopen = function(e) {
+        var conn = new WebSocket("ws://localhost:8080");
+        conn.onopen = function (e) {
             console.log("Connection established!");
+            console.log(e);
+        };
+
+        conn.onmessage = function (e) {
+            console.log("Message received: ", e.data);
+
+            const o = JSON.parse(e.data);
+            if (o.chatId != undefined) {
+                document.getElementById("currentChatId").textContent = o.chatId;
+            }
+            // Process the received message
         };
 
         function sendMessage() {
-            const message = document.getElementById('message').value;
+            const id = document.getElementById("id").value;
+            const message = document.getElementById("message").value;
             const obj = {
-                "message" : message
-            }
-            const json = JSON.stringify(obj)
+                id: id,
+                message: message,
+            };
+            const json = JSON.stringify(obj);
             conn.send(json);
         }
     </script>
 </head>
+
 <body>
-    <input type="text" id="message" />
+    currentChatId: <span id="currentChatId">0</span>
+    <br />
+    <br />
+    id target: <input type="text" id="id" /> <br /><br />
+    message: <input type="text" id="message" />
     <button onclick="sendMessage()">Send</button>
 </body>
+
 </html>

@@ -17,6 +17,14 @@ class Chat implements MessageComponentInterface
     public function onOpen(ConnectionInterface $conn)
     {
         $this->clients->attach($conn);
+
+        $answer = [
+            "success" => true,
+            "chatId" => $conn->resourceId
+        ];
+
+        $jsonResponse = json_encode($answer);
+        $conn->send($jsonResponse);
     }
 
     public function onMessage(ConnectionInterface $from, $msg)
