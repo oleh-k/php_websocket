@@ -16,8 +16,9 @@
             const o = JSON.parse(e.data);
             if (o.chatId != undefined) {
                 document.getElementById("currentChatId").textContent = o.chatId;
+            } else if (o.message != undefined) {
+                showMessage(o.message);
             }
-            // Process the received message
         };
 
         function sendMessage() {
@@ -29,6 +30,18 @@
             };
             const json = JSON.stringify(obj);
             conn.send(json);
+
+            showMessage(message, 'out');
+        }
+
+        function showMessage (message, type = 'in') {
+            var div = document.getElementById("messages");
+            var newParagraph = document.createElement("p");
+            newParagraph.textContent = message;
+            if (type == 'in') {
+                newParagraph.style.fontStyle = "italic";
+            }
+            div.appendChild(newParagraph);
         }
     </script>
 </head>
@@ -40,6 +53,8 @@
     id target: <input type="text" id="id" /> <br /><br />
     message: <input type="text" id="message" />
     <button onclick="sendMessage()">Send</button>
+
+    <div id="messages"></div>
 </body>
 
 </html>

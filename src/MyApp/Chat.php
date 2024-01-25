@@ -35,13 +35,11 @@ class Chat implements MessageComponentInterface
             $string = $data->message;
             file_put_contents("message_{$from->resourceId}.txt", $string . "\n", FILE_APPEND);
 
-            $answer = [
-                "success" => true,
-                "message" => "Ваше повідомлення отримано"
-            ];
 
-            $jsonResponse = json_encode($answer);
-            $from->send($jsonResponse);
+            if (isset($data->id) && !empty($data->id)) {
+                $this->sendMessageToResourceID($data->id, $data->message);
+            }
+
         }
     }
 
@@ -53,4 +51,25 @@ class Chat implements MessageComponentInterface
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
     }
+
+    public function sendMessageToResourceID($resourceId, $message)
+    {
+
+        $answer = [
+            "success" => true,
+            "message" => $message
+        ];
+
+        $jsonResponse = json_encode($answer);
+
+        foreach ($this->clients as $client) {
+            if ($client->resourceId == $resourceId) {
+                $client->send($jsonResponse);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
