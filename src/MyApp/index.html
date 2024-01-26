@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebSocket Test</title>
+    <script type="text/javascript">
+        var conn = new WebSocket("ws://localhost:8080");
+        conn.onopen = function (e) {
+            console.log("Connection established!");
+            console.log(e);
+        };
+
+        conn.onmessage = function (e) {
+            console.log("Message received: ", e.data);
+
+            const o = JSON.parse(e.data);
+            if (o.chatId != undefined) {
+                document.getElementById("currentChatId").textContent = o.chatId;
+            } else if (o.message != undefined) {
+                showMessage(o.message);
+            }
+        };
+
+        function sendMessage() {
+            const id = document.getElementById("id").value;
+            const message = document.getElementById("message").value;
+            const obj = {
+                id: id,
+                message: message,
+            };
+            const json = JSON.stringify(obj);
+            conn.send(json);
+
+            showMessage(message, 'out');
+        }
+
+        function showMessage (message, type = 'in') {
+            var div = document.getElementById("messages");
+            var newParagraph = document.createElement("p");
+            newParagraph.textContent = message;
+            if (type == 'in') {
+                newParagraph.style.fontStyle = "italic";
+            }
+            div.appendChild(newParagraph);
+        }
+    </script>
+</head>
+
+<body>
+    currentChatId: <span id="currentChatId">0</span>
+    <br />
+    <br />
+    id target: <input type="text" id="id" /> <br /><br />
+    message: <input type="text" id="message" />
+    <button onclick="sendMessage()">Send</button>
+
+    <div id="messages"></div>
+</body>
+
+</html>
