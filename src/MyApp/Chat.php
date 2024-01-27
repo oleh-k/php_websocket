@@ -39,7 +39,21 @@ class Chat implements MessageComponentInterface
             if (isset($data->id) && !empty($data->id)) {
                 $this->sendMessageToResourceID($data->id, $data->message);
             }
+        }
+        if (isset($data->getAllUsers)) {
 
+            $arr = [];
+
+            foreach ($this->clients as $client) {
+                $arr[] = $client->resourceId;
+            }
+
+            $answer = [
+                "users" => $arr
+            ];
+    
+            $jsonResponse = json_encode($answer);
+            $from->send($jsonResponse);
         }
     }
 
@@ -71,5 +85,4 @@ class Chat implements MessageComponentInterface
 
         return false;
     }
-
 }
