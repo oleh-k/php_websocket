@@ -3,68 +3,51 @@
 
 <head>
     <title>WebSocket Test</title>
-    <script type="text/javascript">
-        var conn = new WebSocket("ws://localhost:8080");
-        conn.onopen = function (e) {
-            console.log("Connection established!");
-            console.log(e);
 
-            const obj = {
-                getAllUsers: true,
-            };
-            const json = JSON.stringify(obj);
-            conn.send(json);
-        };
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" />
 
-        conn.onmessage = function (e) {
-            console.log("Message received: ", e.data);
-
-            const o = JSON.parse(e.data);
-            if (o.chatId != undefined) {
-                document.getElementById("currentChatId").textContent = o.chatId;
-            } else if (o.users != undefined) {
-                document.getElementById("users").textContent = o.users;
-            } else if (o.message != undefined) {
-                showMessage(o.message);
-            }
-        };
-
-        function sendMessage() {
-            const id = document.getElementById("id").value;
-            const message = document.getElementById("message").value;
-            const obj = {
-                id: id,
-                message: message,
-            };
-            const json = JSON.stringify(obj);
-            conn.send(json);
-
-            showMessage(message, 'out');
-        }
-
-        function showMessage (message, type = 'in') {
-            var div = document.getElementById("messages");
-            var newParagraph = document.createElement("p");
-            newParagraph.textContent = message;
-            if (type == 'in') {
-                newParagraph.style.fontStyle = "italic";
-            }
-            div.appendChild(newParagraph);
-        }
-    </script>
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 </head>
 
 <body>
-    currentChatId: <span id="currentChatId">0</span>
-    <br>
-    users: <span id="users">0</span>
-    <br />
-    <br />
-    id target: <input type="text" id="id" /> <br /><br />
-    message: <input type="text" id="message" />
-    <button onclick="sendMessage()">Send</button>
-
-    <div id="messages"></div>
+    <div id="app">
+        <el-input placeholder="Please input" v-model="message"></el-input>
+        <el-button type="primary" @click="send">send</el-button>
+    </div>
 </body>
+
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            visible: false,
+            message: "Hello",
+        },
+        methods: {
+            send() {
+                this.sendMessage(this.message);
+            },
+            sendMessage(message) {
+                if (this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(message);
+                }
+            },
+        },
+        created() {
+            this.ws = new WebSocket("ws://localhost:8080");
+
+            this.ws.addEventListener("open", (event) => {
+                console.log("WebSocket connection opened:", event);
+                this.ws.send("Hello Server!");
+            });
+
+            this.ws.addEventListener("message", (event) => {
+                console.log("Message from server:", event.data);
+                this.messages.push(event.data);
+            });
+        },
+    });
+</script>
 
 </html>
