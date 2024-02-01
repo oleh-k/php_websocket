@@ -47,6 +47,11 @@
                 this.messages.push(event.data);
             });
         },
+        destroyed() {
+            if (this.ws) {
+                this.ws.close();
+            }
+        },
     });
 </script>
 
