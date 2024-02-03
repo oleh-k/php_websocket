@@ -12,17 +12,32 @@
 
 <body>
     <div id="app">
-        <el-input placeholder="Please input" v-model="message"></el-input>
-        <el-button type="primary" @click="send">send</el-button>
+        <el-row justify="center" type="flex" >
+            <el-col :xs="6"  :sm="6" :md="6" :lg="6" :xl="6">
+                <div v-if="users != 0">
+                    <div v-for="user in users">
+                        <el-button :type="userId==user.id?'primary':'default'" @click="userId=user.id">{{user.id}}</el-button>
+                    </div>
+                </div>
+            </el-col>
+            <el-col :xs="6"  :sm="6" :md="6" :lg="6" :xl="6">
+                <el-input placeholder="Please input" v-model="message"></el-input>
+                <el-button type="primary" @click="send">send</el-button>
+            </el-col>
+            <el-col :xs="6"  :sm="6" :md="6" :lg="6" :xl="6"></el-col>
+        </el-row>
     </div>
 </body>
 
 <script>
-    new Vue({
+    var app = new Vue({
         el: "#app",
         data: {
             visible: false,
             message: "Hello",
+            messages: [],
+            users: [],
+            userId: 0
         },
         methods: {
             send() {
@@ -33,19 +48,35 @@
                     this.ws.send(message);
                 }
             },
+            getUsers() {
+                let o = {
+                    getAllUsers: true
+                }
+                this.sendMessage(JSON.stringify(o));
+            }
         },
         created() {
             this.ws = new WebSocket("ws://localhost:8080");
 
             this.ws.addEventListener("open", (event) => {
                 console.log("WebSocket connection opened:", event);
-                this.ws.send("Hello Server!");
+                app.getUsers();
             });
 
             this.ws.addEventListener("message", (event) => {
                 console.log("Message from server:", event.data);
                 this.messages.push(event.data);
+
+                let o = JSON.parse(event.data);
+
+                if (o.users != undefined) {
+                    this.users = o.users;
+                }
             });
+
+            setInterval(() => {
+                app.getUsers();
+            }, 5000);
         },
         destroyed() {
             if (this.ws) {

@@ -45,7 +45,9 @@ class Chat implements MessageComponentInterface
             $arr = [];
 
             foreach ($this->clients as $client) {
-                $arr[] = $client->resourceId;
+                $arr[] = [
+                    "id" => $client->resourceId
+                ];
             }
 
             $answer = [
