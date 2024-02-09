@@ -36,8 +36,8 @@ class Chat implements MessageComponentInterface
             file_put_contents("message_{$from->resourceId}.txt", $string . "\n", FILE_APPEND);
 
 
-            if (isset($data->id) && !empty($data->id)) {
-                $this->sendMessageToResourceID($data->id, $data->message);
+            if (isset($data->to) && !empty($data->to)) {
+                $this->sendMessageToResourceID($from->resourceId, $data->to, $data->message);
             }
         }
         if (isset($data->getAllUsers)) {
@@ -68,18 +68,21 @@ class Chat implements MessageComponentInterface
     {
     }
 
-    public function sendMessageToResourceID($resourceId, $message)
+    public function sendMessageToResourceID($from, $to, $message)
     {
 
         $answer = [
             "success" => true,
+            "from" => $from,
+            "to" => $to,
+            "type" => 'in',
             "message" => $message
         ];
 
         $jsonResponse = json_encode($answer);
 
         foreach ($this->clients as $client) {
-            if ($client->resourceId == $resourceId) {
+            if ($client->resourceId == $to) {
                 $client->send($jsonResponse);
                 return true;
             }

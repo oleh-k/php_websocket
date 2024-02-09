@@ -14,6 +14,7 @@
     <div id="app">
         <el-row justify="center" type="flex" >
             <el-col :xs="6"  :sm="6" :md="6" :lg="6" :xl="6">
+                <div>chatId: {{chatId}}</div>
                 <div v-if="users != 0">
                     <div v-for="user in users">
                         <el-button :type="userId==user.id?'primary':'default'" @click="userId=user.id">{{user.id}}</el-button>
@@ -21,6 +22,10 @@
                 </div>
             </el-col>
             <el-col :xs="6"  :sm="6" :md="6" :lg="6" :xl="6">
+                <div v-for="message in messages">
+                    <div v-if="message.message != undefined && message.type == 'in' && message.to == chatId && message.from == userId" style="text-align: end;"> <<{{message.message}}</div>
+                    <div v-if="message.message != undefined  && message.type == 'out' && message.from == chatId && message.to == userId"> >>{{message.message}}</div>
+                </div>
                 <el-input placeholder="Please input" v-model="message"></el-input>
                 <el-button type="primary" @click="send">send</el-button>
             </el-col>
@@ -37,11 +42,19 @@
             message: "Hello",
             messages: [],
             users: [],
-            userId: 0
+            userId: 0,
+            chatId: 0
         },
         methods: {
             send() {
-                this.sendMessage(this.message);
+                let o = {
+                    from: this.chatId,
+                    to: this.userId,
+                    message: this.message,
+                    type: 'out'
+                }
+                this.messages.push(o);
+                this.sendMessage(JSON.stringify(o));
             },
             sendMessage(message) {
                 if (this.ws.readyState === WebSocket.OPEN) {
@@ -65,12 +78,20 @@
 
             this.ws.addEventListener("message", (event) => {
                 console.log("Message from server:", event.data);
-                this.messages.push(event.data);
 
                 let o = JSON.parse(event.data);
 
+                if (o.message != undefined) {
+                    o.type = 'in';
+                    this.messages.push(o);
+                }
+
                 if (o.users != undefined) {
                     this.users = o.users;
+                }
+
+                if (o.chatId != undefined) {
+                    this.chatId = o.chatId;
                 }
             });
 
