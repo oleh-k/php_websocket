@@ -3,58 +3,108 @@
 
 <head>
     <title>WebSocket Test</title>
-    <script type="text/javascript">
-        var conn = new WebSocket("ws://localhost:8080");
-        conn.onopen = function (e) {
-            console.log("Connection established!");
-            console.log(e);
-        };
 
-        conn.onmessage = function (e) {
-            console.log("Message received: ", e.data);
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" />
 
-            const o = JSON.parse(e.data);
-            if (o.chatId != undefined) {
-                document.getElementById("currentChatId").textContent = o.chatId;
-            } else if (o.message != undefined) {
-                showMessage(o.message);
-            }
-        };
-
-        function sendMessage() {
-            const id = document.getElementById("id").value;
-            const message = document.getElementById("message").value;
-            const obj = {
-                id: id,
-                message: message,
-            };
-            const json = JSON.stringify(obj);
-            conn.send(json);
-
-            showMessage(message, 'out');
-        }
-
-        function showMessage (message, type = 'in') {
-            var div = document.getElementById("messages");
-            var newParagraph = document.createElement("p");
-            newParagraph.textContent = message;
-            if (type == 'in') {
-                newParagraph.style.fontStyle = "italic";
-            }
-            div.appendChild(newParagraph);
-        }
-    </script>
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 </head>
 
 <body>
-    currentChatId: <span id="currentChatId">0</span>
-    <br />
-    <br />
-    id target: <input type="text" id="id" /> <br /><br />
-    message: <input type="text" id="message" />
-    <button onclick="sendMessage()">Send</button>
-
-    <div id="messages"></div>
+    <div id="app">
+        <el-row justify="center" type="flex" >
+            <el-col :xs="6"  :sm="6" :md="6" :lg="6" :xl="6">
+                <div>chatId: {{chatId}}</div>
+                <div v-if="users != 0">
+                    <div v-for="user in users">
+                        <el-button :type="userId==user.id?'primary':'default'" @click="userId=user.id">{{user.id}}</el-button>
+                    </div>
+                </div>
+            </el-col>
+            <el-col :xs="6"  :sm="6" :md="6" :lg="6" :xl="6">
+                <div v-for="message in messages">
+                    <div v-if="message.message != undefined && message.type == 'in' && message.to == chatId && message.from == userId" style="text-align: end;"> <<{{message.message}}</div>
+                    <div v-if="message.message != undefined  && message.type == 'out' && message.from == chatId && message.to == userId"> >>{{message.message}}</div>
+                </div>
+                <el-input placeholder="Please input" v-model="message"></el-input>
+                <el-button type="primary" @click="send">send</el-button>
+            </el-col>
+            <el-col :xs="6"  :sm="6" :md="6" :lg="6" :xl="6"></el-col>
+        </el-row>
+    </div>
 </body>
+
+<script>
+    var app = new Vue({
+        el: "#app",
+        data: {
+            visible: false,
+            message: "Hello",
+            messages: [],
+            users: [],
+            userId: 0,
+            chatId: 0
+        },
+        methods: {
+            send() {
+                let o = {
+                    from: this.chatId,
+                    to: this.userId,
+                    message: this.message,
+                    type: 'out'
+                }
+                this.messages.push(o);
+                this.sendMessage(JSON.stringify(o));
+            },
+            sendMessage(message) {
+                if (this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(message);
+                }
+            },
+            getUsers() {
+                let o = {
+                    getAllUsers: true
+                }
+                this.sendMessage(JSON.stringify(o));
+            }
+        },
+        created() {
+            this.ws = new WebSocket("ws://localhost:8080");
+
+            this.ws.addEventListener("open", (event) => {
+                console.log("WebSocket connection opened:", event);
+                app.getUsers();
+            });
+
+            this.ws.addEventListener("message", (event) => {
+                console.log("Message from server:", event.data);
+
+                let o = JSON.parse(event.data);
+
+                if (o.message != undefined) {
+                    o.type = 'in';
+                    this.messages.push(o);
+                }
+
+                if (o.users != undefined) {
+                    this.users = o.users;
+                }
+
+                if (o.chatId != undefined) {
+                    this.chatId = o.chatId;
+                }
+            });
+
+            setInterval(() => {
+                app.getUsers();
+            }, 5000);
+        },
+        destroyed() {
+            if (this.ws) {
+                this.ws.close();
+            }
+        },
+    });
+</script>
 
 </html>
